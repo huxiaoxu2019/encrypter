@@ -1,4 +1,5 @@
 #include<iostream>
+#include<cmath>
 #include<fstream>
 
 using namespace std;
@@ -19,16 +20,33 @@ void encrypt_alg_1(char * data, int len) {
 }
 
 void encrypt(ifstream &in, ofstream &out) {
-    cout<<"calculating...\n"<<endl;
+    cout<<"calculating..."<<endl;
     char data[ENCRYPT_BLOCK_SIZE];
-    int rsize;
+    unsigned long long sizeDone = 0, sizeTotal;
+    int rsize, process = 0, last_process = -1;
+
+    in.seekg(0, std::ios::end);
+    sizeTotal = in.tellg();
+    in.seekg(0, std::ios::beg);
+    in.clear();
+
     while (true) {
         in.read(data, ENCRYPT_BLOCK_SIZE);
         rsize = in.gcount();
+
+        sizeDone += rsize;
+        process = floor((sizeDone * 1.0 / sizeTotal) * 100);
+
+        if (process != last_process) {
+            cout<<"\r"<<process<<"%"<<flush;
+            last_process = process;
+        }
+
         encrypt_alg_1(data, rsize);
         out.write(data, rsize);
         if (in.eof()) break;
     }
+    cout<<endl<<"finished"<<endl;
 }
 
 void print_usages() {
